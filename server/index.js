@@ -10,8 +10,16 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 
 import { register } from './controllers/auth.js'
+import { createPost } from './controllers/posts.js'
 import authRoutes from './routes/auth.js'
 import userRoutes from './routes/users.js'
+import postRoutes from './routes/posts.js'
+import { verifyToken } from './middlewares/auth.js'
+
+// model import for temp inserting the data
+import Post from './models/postModel.js'
+import User from './models/userModel.js'
+import { posts, users } from './data/index.js'
 
 /* CONFIGURATIONS */
 
@@ -42,10 +50,12 @@ const upload = multer({ storage })
 
 // ROUTES
 app.use('/auth', authRoutes)
-app.use('/user', userRoutes)
+app.use('/users', userRoutes)
+app.use('/posts', postRoutes)
 
 // ROUTES WITH FILES
 app.post('/auth/register', upload.single('picture'), register)
+app.post('/posts', verifyToken, upload.single('picture'), createPost)
 
 const PORT = process.env.PORT || 6001
 
@@ -59,6 +69,10 @@ mongoose
     console.log('MongoDB connected successfully')
     app.listen(PORT, (req, res) => {
       console.log(`server is listing to http://localhost:${PORT}`)
+
+      // ADD DATA ONE TIME ONLY
+      // User.insertMany(users)
+      // Post.insertMany(posts)
     })
   })
   .catch((error) => {
